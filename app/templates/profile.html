@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username|title }} | {% endblock %}
+
+{% block content %}
+
+<head>
+
+    <!-- Title -->
+    <title>Instagram Profile Layout</title>
+
+    <!-- External CSS Files -->
+    <link rel="stylesheet" href="{% static 'assets3/css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'assets3/css/styles.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+    <style>
+        .name-container {
+            display: flex;
+            align-items: center;
+          }
+          
+        .follow-btn-container {
+            margin-left: 10px;
+          }
+    </style>
+
+</head>
+<body>
+
+    <header>
+        <br><br><br>
+        <div class="container">
+
+            <div class="profile" style="padding-bottom:15px">
+
+                <div class="profile-image">
+                    {% if host.userprofile.pfp %}
+                    <img src="{{host.userprofile.pfp.url}}" alt="" style="width: 200px; height: 200px;">
+                    {% else %}
+                    <img src="{% static 'default_img.jpg' %}" alt="" style="width: 200px; height: 200px;">
+                    {% endif %}
+
+                </div>
+
+                <div class="profile-user-settings">
+                    <div class="name-container" style="margin-top:25px">
+                        {% comment %} {% if host.first_name %} {% endcomment %}
+                        <h6 class="profile-user-name">{{host.first_name|title}} {{host.last_name|title}}</h6>
+                        
+                        {% if user.username == host.username %}
+                        {% comment %} <a href="" class="btn btn-primary"><i class="fas fa-cog"></i></a><br> {% endcomment %}
+                        <a href="{% url 'app:edit_profile' %}" class="btn profile-edit-btn" style="text-decoration: none; color: white; background-color: grey">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
+                        </a>
+                        {% else %}
+                            <form method="POST" class="follow-form" data-url="{% url 'app:profile' host.username %}">
+                            {% csrf_token %}
+                            {% if user.userprofile in host.userprofile.followers.all %}
+                                <button class="btn profile-edit-btn" style="color: white; background-color:red; margin-top:5px;" name="follow" value="unfollow" type="submit">Unfollow</button>
+                                {% comment %} <a href="{% url 'conversation' profile.user  %}" class="btn profile-edit-btn">Message</a> <br><br> {% endcomment %}
+
+                            {% else %}
+                                <button class="btn profile-edit-btn" style="color: white; background-color:blue; margin-top:5px;" name="follow" value="follow" type="submit">Follow</button>
+                                {% comment %} <a href="{% url 'conversation' profile.user  %}" class="btn profile-edit-btn">Message</a> <br><br> {% endcomment %}
+
+                            {% endif %}
+                            </form>
+                            <a href="{% url 'app:conversation' host  %}" class="btn profile-edit-btn">Message</a> <br><br>
+
+                        {% endif %}  
+                    </div>
+                    <br>
+                    <h5 style="font-size: 15px;" class="profile-user-name">@{{host.username}}</h5>
+                    <br><br>
+                </div>
+
+                <div class="profile-stats">
+                    <ul>
+                        <li><a class="user-posts">{{num_posts}} posts</a></li>
+                        <li><a class="followers-count" href="#">{{num_followers}} followers</a></li>
+                        <li><a class="following-count" href="#">{{num_following}} following</a></li>
+                    </ul>
+                    <br>
+                </div>
+                
+                <div class="profile-bio">
+                    <br>
+                    {% if host.userprofile.bio %}
+                    <p><span class="profile-real-name"></span>{{host.userprofile.bio}} </p>
+                    {% endif %} 
+                    <br>
+                    {% if host.userprofile.location %}
+                    <p><span class="profile-real-name"></span>◉ {{host.userprofile.location}}</p>
+                    {% endif %}
+                    {% if profile.url %}
+                    <p><span class="profile-real-name"></span>◉ <a href="{{profile.url}}">{{profile.url}}</a></p>
+                    {% endif %}
+                    <br><br>
+                </div>
+            </div>
+            <!-- End of profile section -->
+        </div>
+        <!-- End of container -->
+
+    </header>
+    <hr style="width: 59%; margin: 10px auto;">
+    <div class="profile-user-settings" style="display: flex; justify-content: center;">
+        {% if request.user != host.userprofile.user %}
+        Posts
+        {% endif %}
+        {% if request.user == host.userprofile.user %}
+        <a href="#" class="btns profiele-edit-btn user-posts">Posts</a>
+        <a href="#" class="btns profeile-edit-btn saved-btn" style="margin-left: 10px;">Saved</a>
+        {% endif %}
+    </div>
+    <br><br>
+    
+    
+    <main>
+        <div id="peek-container" class="container">
+            <div class="gallery" id="gallery">
+                {% for post in user_posts %}
+                <a href="{% url 'app:post_detail' post.id %}">
+                    <div class="gallery-item" tabindex="0">
+                        <img src="{{ post.img.url }}" class="gallery-image" alt="" style="width: 500px; height: 300px; object-fit: cover;">
+                        <div class="gallery-item-info">
+                            <ul>
+                                <li class="gallery-item-likes"><span class="visually-hidden">Likes:</span><i class="fas fa-heart" aria-hidden="true"></i> {{ post.likes.count }}</li>
+                                <li class="gallery-item-comments"><span class="visually-hidden">Comments:</span><i class="fas fa-comment" aria-hidden="true"></i> {{ post.comment.count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <!-- End of gallery -->
+        </div>
+        <!-- End of container -->
+    </main>
+
+
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $(".saved-btn").click(function(e) {
+                e.preventDefault();
+                $(this).addClass("active");
+
+    
+                // Render the saved posts
+                var savedPosts = `<div class="gallery" id="gallery">
+                {% for post in saved_posts %}
+                <a href="{% url 'app:post_detail' post.id %}">
+                    <div class="gallery-item" tabindex="0">
+                        <img src="{{ post.img.url }}" class="gallery-image" alt="" style="width: 500px; height: 300px; object-fit: cover;">
+                        <div class="gallery-item-info">
+                            <ul>
+                                <li class="gallery-item-likes"><span class="visually-hidden">Likes:</span><i class="fas fa-heart" aria-hidden="true"></i> {{ post.likes.count }}</li>
+                                <li class="gallery-item-comments"><span class="visually-hidden">Comments:</span><i class="fas fa-comment" aria-hidden="true"></i> {{ post.comment.count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                </div>`;
+                $("#peek-container").html(savedPosts);
+            });
+    
+            $(".user-posts").click(function(e) {
+                e.preventDefault();
+                $(this).addClass("active");
+
+    
+                // Render the user's posts
+                var userPosts = `<div class="gallery" id="gallery">
+                {% for post in user_posts %}
+                <a href="{% url 'app:post_detail' post.id %}">
+                    <div class="gallery-item" tabindex="0">
+                        <img src="{{ post.img.url }}" class="gallery-image" alt="" style="width: 500px; height: 300px; object-fit: cover;">
+                        <div class="gallery-item-info">
+                            <ul>
+                                <li class="gallery-item-likes"><span class="visually-hidden">Likes:</span><i class="fas fa-heart" aria-hidden="true"></i> {{ post.likes.count }}</li>
+                                <li class="gallery-item-comments"><span class="visually-hidden">Comments:</span><i class="fas fa-comment" aria-hidden="true"></i> {{ post.comment.count }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                </div>`;
+                $("#peek-container").html(userPosts);
+            });
+
+            $(".followers-count").click(function(e) {
+                e.preventDefault();
+                $(this).addClass("active");
+
+            
+                // Render the followers
+                var followersList = `
+                <div class="row">
+                    <div class="col-lg-7 col-md-10 mx-auto">
+                        {% for follower in followers %}
+                            <div class="card mb-3" style="height:100px; width: 600px;">
+                                <div class="row no-gutters mt-3">
+                                    <div class="col-md-2" style="text-align:center; padding-right:0">
+                                        <a href="{% url 'app:profile' follower.user.username %}">
+                                        {% if follower.pfp %} 
+                                            <img class="rounded-circle mt-2" style="margin:10px 10px 0 !important" src="{{follower.pfp.url}}" alt="avatar" width="65" height="65" />
+                                        {% else %}
+                                            <img class="rounded-circle mt-2" style="margin:10px 10px 0 !important" src="{% static 'default_img.jpg' %}" alt="avatar" width="65" height="65" />
+                                        {% endif %}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6" style="padding-left:0;">
+                                        <div class="card-body" style="padding-left:0">
+                                            <hS class="card-title"><strong>{{ follower.user.first_name|title }} {{follower.user.last_name|title }}</strong>  <a href="{% url 'app:profile' follower.user.username %}" style="text-decoration:none; color:grey;"> @{{ follower.user.username }}</a></hs>
+                                            <br>
+                                            <br>
+                                            <div style="display: flex; align-items: center;">
+                                                <ul style="padding-left:0; white-space: nowrap;">
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px">{{ follower.num_posts }} Posts</li>
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px"><a style="text-decoration: none">{{follower.num_followers}} Followers</a></li>
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px"><a style="text-decoration: none">{{follower.num_following}} Following</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>`;
+                $("#peek-container").html(followersList);
+            });
+            
+            $(".following-count").click(function(e) {
+                e.preventDefault();
+                $(this).addClass("active");
+
+            
+                // Render the following list
+                var followingList = `
+                <div class="row">
+                    <div class="col-lg-7 col-md-10 mx-auto">
+                        {% for follows in following %}
+                            <div class="card" style="height:100px; width: 600px;">
+                                <div class="row no-gutters mt-3">
+                                    <div class="col-md-2" style="text-align:center; padding-right:0">
+                                        <a href="{% url 'app:profile' follows.user.username %}">
+                                        {% if follows.pfp %} 
+                                            <img class="rounded-circle mt-2" style="margin:10px 10px 0 !important" src="{{follows.pfp.url}}" alt="avatar" width="65" height="65" />
+                                        {% else %}
+                                            <img class="rounded-circle mt-2" style="margin:10px 10px 0 !important" src="{% static 'default_img.jpg' %}" alt="avatar" width="65" height="65" />
+                                        {% endif %}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6" style="padding-left:0;">
+                                        <div class="card-body" style="padding-left:0">
+                                            <hS class="card-title"><strong>{{ follows.user.first_name|title }} {{follows.user.last_name|title }}</strong>  <a href="{% url 'app:profile' follows.user.username %}" style="text-decoration:none; color:grey;"> @{{ follows.user.username }}</a></hs>
+                                            <br>
+                                            <br>
+                                            <div style="display: flex; align-items: center;">
+                                                <ul style="padding-left:0; white-space: nowrap;">
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px">{{ follows.num_posts }} Posts</li>
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px"><a style="text-decoration: none">{{follows.num_followers}} Followers</a></li>
+                                                    <li style="font-size:12px; display:inline-block; padding-right:20px"><a style="text-decoration: none">{{follows.num_following}} Following</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>`;
+                $("#peek-container").html(followingList);
+            });
+
+            $('.follow-form').on('submit', function(e){
+                e.preventDefault();
+                var url = $(this).attr('data-url');
+                var action = $('button[name=follow]').val();
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    data: {
+                        'action': action,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    dataType: 'json',
+                    success: function(data){
+                        if(data.action == 'follow'){
+                            $('button[name=follow]').val('unfollow');
+                            $('button[name=follow]').text('Unfollow');
+                            $('button[name=follow]').css('background-color', 'red');
+                            // Increase follower count
+                            var followers = parseInt($('.followers-count').text());
+                            followers++;
+                            $('.followers-count').text(followers + ' followers');
+                        }
+                        else{
+                            $('button[name=follow]').val('follow');
+                            $('button[name=follow]').text('Follow');
+                            $('button[name=follow]').css('background-color', 'blue');
+                            // Decrease follower count
+                            var followers = parseInt($('.followers-count').text());
+                            followers--;
+                            $('.followers-count').text(followers + ' followers');
+                        }
+                    },
+                    error: function(xhr, errmsg, err){
+                        console.log(xhr.status + ": " + xhr.responseText);
+                    }
+                });
+            });   
+                     
+        });
+    </script>
+    
+{% endblock content %}

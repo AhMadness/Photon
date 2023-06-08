@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register | {% endblock %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://kit.fontawesome.com/fc1e235b2e.js"></script>
+  <link rel="stylesheet" href="{% static 'assets2/style.css' %}">
+</head>
+
+<style>
+  .errorlist {
+    color:red;
+    font-size: 14px;
+  }
+  body {
+    background-color:#1F1F1F;
+  }
+</style>
+
+<body>
+
+  <div id="wrapper">
+    <div class="container">
+      <div class="form-data">
+        <form action="" method="POST">
+          {% csrf_token %}
+          <div class="logo">
+            {% comment %} <img src="{% static 'assets2/images/logo.png' %}" alt="logo"> {% endcomment %}
+            <h1>Photon</h1>
+          </div>
+          {{ form.as_p }}
+
+          <!-- <input type="text" placeholder="Phone number, username, or email"> -->
+          <!-- <input type="password" placeholder="Password"> -->
+          {% comment %} {{form.username}}
+          {{form.email}}
+          {{form.password1}}
+          {{form.password2}} {% endcomment %}
+          <button class="form-btn" type="submit">Sign Up</button>
+
+
+          <!-- <a href="index.html" class="form-btn" type="submit">Log in</a> -->
+          {% comment %} <span class="has-separator">Or</span> {% endcomment %}
+          {% comment %} <a class="facebook-login" href="#">
+            <i class="fab fa-facebook-square"></i> Log in with Facebook
+          </a> {% endcomment %}
+        </form>
+        <div class="sign-up">
+          Already have an account? <a href="{% url 'app:login' %}">Log In</a>
+        </div>
+        <div class="get-the-app">
+          <span style="color:#F0F0F0">Get the app.</span>
+          <div class="badges" style="margin-bottom:20px">
+            <img src="{% static 'assets2/images/app-store.png' %}" alt="app-store badge">
+            <img src="{% static 'assets2/images/google-play.png' %}" alt="google-play badge">
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+</body>
+
+{% endblock content %}
