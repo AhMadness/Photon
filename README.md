@@ -1,5 +1,5 @@
 # Photon
-Simple Instagram Clone
+A Django Based Simple Instagram Clone.
 
 # Home
 ![2023-06-08_13-29](https://github.com/AhMadness/Photon/assets/48402736/42d1b50a-d2bd-4298-a240-53149b02846a)
